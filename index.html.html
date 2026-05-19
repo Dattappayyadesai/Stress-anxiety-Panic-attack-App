@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>1Billion Health - Wellness & Mental Health Companion</title>
+    <link rel="manifest" href="data:application/json;base64,eyJuYW1lIjogIjFCaWxsaW9uIEhlYWx0aCIsICJzaG9ydF9uYW1lIjogIjFCaWxsSGVhbHRoIiwgInN0YXJ0X3VybCI6ICIuIiwgImRpc3BsYXkiOiAic3RhbmRhbG9uZSIsICJiYWNrZ3JvdW5kX2NvbG9yIjogIiMwMDAwMDAiLCAidGhlbWVfY29sb3IiOiAiIzAwMDAwMCJ9">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #0a0a0a 0%, #1a1a2e 50%, #16213e 100%);
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        .stars {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 0;
+        }
+        .star {
+            position: absolute; width: 2px; height: 2px; background: #fff;
+            border-radius: 50%; animation: twinkle 3s infinite;
+        }
+        @keyframes twinkle { 0%,100% { opacity: 0.3; } 50% { opacity: 1; } }
+        .app-container { position: relative; z-index: 1; padding-bottom: 80px; }
+
+        /* Header */
+        .header {
+            padding: 16px; display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 100;
+        }
+        .logo { font-size: 20px; font-weight: 800; color: #00d4aa; letter-spacing: -0.5px; }
+        .logo span { color: #fff; }
+        .lang-select {
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; padding: 6px 12px; border-radius: 20px; font-size: 14px; outline: none;
+        }
+        .lang-select option { background: #1a1a2e; color: #fff; }
+
+        /* Audio Unlock */
+        .audio-unlock {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 1000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            transition: opacity 0.5s;
+        }
+        .audio-unlock.hidden { opacity: 0; pointer-events: none; display: none !important; }
+        .unlock-icon { font-size: 64px; margin-bottom: 20px; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%,100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        .unlock-text { font-size: 20px; text-align: center; padding: 0 40px; line-height: 1.6; }
+        .unlock-sub { font-size: 14px; color: #888; margin-top: 12px; }
+
+        /* Sections */
+        .section { padding: 20px 16px; }
+        .section-title {
+            font-size: 22px; font-weight: 700; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 8px;
+        }
+        .section-title .icon { font-size: 24px; }
+
+        /* Meditation Cards */
+        .card-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .med-card {
+            background: linear-gradient(145deg, rgba(0,212,170,0.15), rgba(0,150,255,0.1));
+            border: 1px solid rgba(0,212,170,0.3); border-radius: 16px;
+            padding: 20px 14px; text-align: center; cursor: pointer;
+            transition: all 0.3s; backdrop-filter: blur(5px);
+        }
+        .med-card:hover, .med-card:active { transform: translateY(-3px); border-color: #00d4aa; box-shadow: 0 8px 25px rgba(0,212,170,0.3); }
+        .med-card .emoji { font-size: 36px; margin-bottom: 8px; display: block; }
+        .med-card .title { font-size: 14px; font-weight: 600; }
+        .med-card .duration { font-size: 12px; color: #888; margin-top: 4px; }
+
+        /* Breathing */
+        .breath-container {
+            display: flex; flex-direction: column; align-items: center;
+            background: rgba(255,255,255,0.05); border-radius: 20px;
+            padding: 30px 20px; margin-top: 12px;
+        }
+        .breath-circle {
+            width: 180px; height: 180px; border-radius: 50%;
+            border: 3px solid rgba(0,212,170,0.5);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            position: relative; transition: all 0.5s ease;
+            background: radial-gradient(circle, rgba(0,212,170,0.2) 0%, transparent 70%);
+        }
+        .breath-circle.active { border-color: #00d4aa; box-shadow: 0 0 60px rgba(0,212,170,0.4); }
+        .breath-label { font-size: 28px; font-weight: 700; }
+        .breath-timer { font-size: 48px; font-weight: 200; margin-top: 4px; }
+        .breath-instruction { font-size: 14px; color: #aaa; margin-top: 8px; }
+
+        .breath-buttons { display: flex; gap: 8px; margin-top: 20px; flex-wrap: wrap; justify-content: center; }
+        .breath-btn {
+            background: rgba(0,212,170,0.2); border: 1px solid rgba(0,212,170,0.4);
+            color: #fff; padding: 10px 16px; border-radius: 25px; cursor: pointer;
+            font-size: 13px; transition: all 0.3s;
+        }
+        .breath-btn:hover, .breath-btn.active { background: rgba(0,212,170,0.5); }
+        .breath-btn.stop { background: rgba(255,80,80,0.3); border-color: rgba(255,80,80,0.5); }
+
+        /* Panic Button */
+        .panic-section { padding: 20px 16px; }
+        .panic-btn {
+            width: 100%; padding: 28px; border-radius: 20px;
+            background: linear-gradient(145deg, #ff4444, #cc0000);
+            border: none; color: #fff; font-size: 20px; font-weight: 700;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            gap: 12px; box-shadow: 0 10px 40px rgba(255,0,0,0.4);
+            transition: all 0.3s; animation: panicPulse 2s infinite;
+        }
+        @keyframes panicPulse { 0%,100% { box-shadow: 0 10px 40px rgba(255,0,0,0.4); } 50% { box-shadow: 0 10px 60px rgba(255,0,0,0.7); } }
+        .panic-btn:active { transform: scale(0.98); }
+        .panic-btn .siren { font-size: 32px; }
+
+        .panic-active {
+            background: rgba(255,0,0,0.1); border: 1px solid rgba(255,0,0,0.3);
+            border-radius: 16px; padding: 20px; margin-top: 16px; display: none;
+        }
+        .panic-active.show { display: block; animation: fadeIn 0.5s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .panic-text { font-size: 18px; line-height: 1.8; text-align: center; }
+        .panic-text strong { color: #ff6b6b; font-size: 24px; }
+        .panic-grounding { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 16px; }
+        .ground-item {
+            background: rgba(255,255,255,0.08); border-radius: 12px; padding: 14px 8px;
+            text-align: center; font-size: 13px; cursor: pointer; transition: all 0.3s;
+            border: 2px solid transparent;
+        }
+        .ground-item.done { background: rgba(0,212,170,0.2); border-color: #00d4aa; color: #00d4aa; }
+        .ground-item .g-emoji { font-size: 28px; display: block; margin-bottom: 4px; }
+
+        /* Mood Tracker */
+        .mood-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-top: 12px; }
+        .mood-btn {
+            background: rgba(255,255,255,0.08); border: 2px solid transparent;
+            border-radius: 16px; padding: 14px 4px; text-align: center;
+            cursor: pointer; transition: all 0.3s; font-size: 12px;
+        }
+        .mood-btn .m-emoji { font-size: 32px; display: block; margin-bottom: 4px; }
+        .mood-btn:hover { background: rgba(255,255,255,0.15); }
+        .mood-btn.selected { border-color: #00d4aa; background: rgba(0,212,170,0.2); transform: scale(1.05); }
+
+        .mood-note {
+            width: 100%; margin-top: 12px; background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.15); border-radius: 12px;
+            padding: 12px 16px; color: #fff; font-size: 14px; outline: none;
+            resize: vertical; min-height: 60px;
+        }
+        .mood-note::placeholder { color: #666; }
+        .log-mood-btn {
+            width: 100%; margin-top: 12px; padding: 14px;
+            background: linear-gradient(145deg, #00d4aa, #0096ff);
+            border: none; border-radius: 12px; color: #fff; font-size: 16px;
+            font-weight: 600; cursor: pointer; transition: all 0.3s;
+        }
+        .log-mood-btn:active { transform: scale(0.98); }
+
+        /* Dashboard */
+        .dashboard-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+        .dash-card {
+            background: rgba(255,255,255,0.06); border-radius: 16px; padding: 20px 14px;
+            text-align: center; border: 1px solid rgba(255,255,255,0.1);
+        }
+        .dash-card .dash-num { font-size: 36px; font-weight: 800; color: #00d4aa; }
+        .dash-card .dash-label { font-size: 12px; color: #888; margin-top: 4px; }
+
+        .dash-actions { display: flex; gap: 10px; margin-top: 16px; }
+        .dash-action {
+            flex: 1; padding: 14px; border-radius: 12px; font-size: 14px; font-weight: 600;
+            border: 1px solid rgba(0,212,170,0.4); background: rgba(0,212,170,0.1);
+            color: #00d4aa; cursor: pointer; transition: all 0.3s;
+        }
+        .dash-action:hover { background: rgba(0,212,170,0.25); }
+
+        /* Recent moods */
+        .mood-history { margin-top: 16px; }
+        .mood-entry {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255,255,255,0.05); border-radius: 12px;
+            padding: 12px 16px; margin-bottom: 8px;
+        }
+        .mood-entry .h-emoji { font-size: 24px; }
+        .mood-entry .h-text { flex: 1; font-size: 14px; }
+        .mood-entry .h-date { font-size: 11px; color: #666; }
+        .mood-entry .h-note { font-size: 12px; color: #888; margin-top: 2px; }
+
+        /* Install */
+        .install-section { padding: 20px 16px 40px; text-align: center; }
+        .install-btn {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 14px 28px; border-radius: 25px;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+            color: #fff; font-size: 15px; cursor: pointer; transition: all 0.3s;
+        }
+        .install-btn:hover { background: rgba(255,255,255,0.2); }
+
+        /* Toast */
+        .toast {
+            position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(100px);
+            background: rgba(0,0,0,0.9); color: #00d4aa; padding: 12px 24px;
+            border-radius: 25px; font-size: 14px; z-index: 1001;
+            border: 1px solid rgba(0,212,170,0.3); opacity: 0;
+            transition: all 0.4s; pointer-events: none;
+        }
+        .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* Footer */
+        .footer { text-align: center; padding: 20px; font-size: 12px; color: #555; }
+
+        /* Meditation Modal */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 500;
+            display: none; flex-direction: column; align-items: center; justify-content: center;
+            padding: 40px 20px;
+        }
+        .modal.show { display: flex; }
+        .modal-close {
+            position: absolute; top: 20px; right: 20px; font-size: 28px;
+            background: none; border: none; color: #fff; cursor: pointer;
+        }
+        .modal-title { font-size: 24px; margin-bottom: 8px; }
+        .modal-subtitle { font-size: 14px; color: #888; margin-bottom: 30px; }
+        .meditation-visual {
+            width: 200px; height: 200px; border-radius: 50%;
+            background: radial-gradient(circle, rgba(0,212,170,0.3) 0%, transparent 70%);
+            display: flex; align-items: center; justify-content: center;
+            margin-bottom: 30px; animation: breathe 4s infinite ease-in-out;
+        }
+        @keyframes breathe { 0%,100% { transform: scale(1); opacity: 0.7; } 50% { transform: scale(1.3); opacity: 1; } }
+        .modal-status { font-size: 16px; color: #00d4aa; }
+        .modal-stop {
+            margin-top: 30px; padding: 12px 32px; border-radius: 25px;
+            background: rgba(255,80,80,0.3); border: 1px solid rgba(255,80,80,0.5);
+            color: #fff; font-size: 15px; cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <!-- Audio Unlock Overlay -->
+    <div id="unlockOverlay" style="position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div style="font-size:64px; margin-bottom:20px;">🔊</div>
+        <div style="font-size:20px; text-align:center; padding:0 40px; line-height:1.6; color:#fff;">Tap to start<br>Your wellness journey begins here</div>
+        <div style="font-size:14px; color:#888; margin-top:12px;">Browser requires a tap before playing audio</div>
+        <div id="startBtn" style="margin-top:30px; padding:20px 60px; font-size:20px; border-radius:30px; background:linear-gradient(145deg, #00d4aa, #0096ff); color:#fff; cursor:pointer; font-weight:700; box-shadow:0 4px 20px rgba(0,212,170,0.4); text-align:center; user-select:none; -webkit-user-select:none; touch-action:manipulation;">START</div>
+    </div>
+
+    <!-- Stars Background -->
+    <div class="stars" id="stars"></div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <!-- Meditation Modal -->
+    <div class="modal" id="medModal">
+        <button class="modal-close" onclick="stopMeditation()">✕</button>
+        <div class="modal-title" id="medTitle">Meditation</div>
+        <div class="modal-subtitle" id="medSub">Relax and breathe</div>
+        <div class="meditation-visual" id="medVisual">
+            <span style="font-size:48px">🧘</span>
+        </div>
+        <div class="modal-status" id="medStatus">Preparing...</div>
+        <button class="modal-stop" onclick="stopMeditation()">Stop</button>
+    </div>
+
+    <div class="app-container">
+        <!-- Header -->
+        <div class="header">
+            <div class="logo">1Billion<span>Health</span></div>
+            <select class="lang-select" id="langSelect" onchange="changeLanguage(this.value)">
+                <option value="en">EN</option>
+                <option value="hi">HI</option>
+                <option value="kn">KN</option>
+            </select>
+        </div>
+
+        <!-- Meditation Section -->
+        <div class="section">
+            <div class="section-title"><span class="icon">🧘</span> <span data-key="meditation">Meditation</span></div>
+            <div class="card-grid">
+                <div class="med-card" onclick="playMeditation('quick')">
+                    <span class="emoji">⚡</span>
+                    <div class="title" data-key="quickCalm">Quick Calm</div>
+                    <div class="duration">2 min</div>
+                </div>
+                <div class="med-card" onclick="playMeditation('stress')">
+                    <span class="emoji">🌊</span>
+                    <div class="title" data-key="stressRelease">Stress Release</div>
+                    <div class="duration">5 min</div>
+                </div>
+                <div class="med-card" onclick="playMeditation('sleep')">
+                    <span class="emoji">🌙</span>
+                    <div class="title" data-key="deepSleep">Deep Sleep</div>
+                    <div class="duration">10 min</div>
+                </div>
+                <div class="med-card" onclick="playMeditation('anxiety')">
+                    <span class="emoji">🌿</span>
+                    <div class="title" data-key="anxietyRelief">Anxiety Relief</div>
+                    <div class="duration">7 min</div>
+                </div>
+                <div class="med-card" onclick="playMeditation('focus')">
+                    <span class="emoji">🎯</span>
+                    <div class="title" data-key="deepFocus">Deep Focus</div>
+                    <div class="duration">15 min</div>
+                </div>
+                <div class="med-card" onclick="playMeditation('morning')">
+                    <span class="emoji">☀️</span>
+                    <div class="title" data-key="morningEnergy">Morning Energy</div>
+                    <div class="duration">5 min</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Breathing Section -->
+        <div class="section">
+            <div class="section-title"><span class="icon">🫁</span> <span data-key="breathing">Breathing Exercises</span></div>
+            <div class="breath-container">
+                <div class="breath-circle" id="breathCircle">
+                    <div class="breath-label" id="breathLabel">Ready</div>
+                    <div class="breath-timer" id="breathTimer">--</div>
+                </div>
+                <div class="breath-instruction" id="breathInstruct">Select a breathing technique</div>
+                <div class="breath-buttons">
+                    <button class="breath-btn" id="btn478" onclick="startBreathing('4-7-8')">4-7-8 Relax</button>
+                    <button class="breath-btn" id="btnBox" onclick="startBreathing('box')">Box 4-4-4</button>
+                    <button class="breath-btn" id="btnCalm" onclick="startBreathing('calm')">4-4 Calm</button>
+                    <button class="breath-btn" id="btnDeep" onclick="startBreathing('deep')">Deep 5-5</button>
+                    <button class="breath-btn stop" onclick="stopBreathing()">⏹ Stop</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Panic Section -->
+        <div class="panic-section">
+            <div class="section-title"><span class="icon">🆘</span> <span data-key="panicHelp">Panic Help</span></div>
+            <button class="panic-btn" onclick="triggerPanicHelp()">
+                <span class="siren">🚨</span>
+                <span data-key="panicButton">I Need Help Now</span>
+            </button>
+            <div class="panic-active" id="panicActive">
+                <div class="panic-text" id="panicText"></div>
+                <div class="panic-grounding">
+                    <div class="ground-item" id="g1" onclick="doGrounding(1)">
+                        <span class="g-emoji">👁️</span>
+                        <div data-key="see5">See 5</div>
+                    </div>
+                    <div class="ground-item" id="g2" onclick="doGrounding(2)">
+                        <span class="g-emoji">✋</span>
+                        <div data-key="touch4">Touch 4</div>
+                    </div>
+                    <div class="ground-item" id="g3" onclick="doGrounding(3)">
+                        <span class="g-emoji">👂</span>
+                        <div data-key="hear3">Hear 3</div>
+                    </div>
+                    <div class="ground-item" id="g4" onclick="doGrounding(4)">
+                        <span class="g-emoji">👃</span>
+                        <div data-key="smell2">Smell 2</div>
+                    </div>
+                    <div class="ground-item" id="g5" onclick="doGrounding(5)">
+                        <span class="g-emoji">👅</span>
+                        <div data-key="taste1">Taste 1</div>
+                    </div>
+                    <div class="ground-item" onclick="resetGrounding()">
+                        <span class="g-emoji">🔄</span>
+                        <div data-key="reset">Reset</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mood Section -->
+        <div class="section">
+            <div class="section-title"><span class="icon">😊</span> <span data-key="moodTracker">Mood Tracker</span></div>
+            <div class="mood-grid">
+                <div class="mood-btn" onclick="selectMood(this, 'great')">
+                    <span class="m-emoji">😄</span>
+                    <div data-key="great">Great</div>
+                </div>
+                <div class="mood-btn" onclick="selectMood(this, 'good')">
+                    <span class="m-emoji">🙂</span>
+                    <div data-key="good">Good</div>
+                </div>
+                <div class="mood-btn" onclick="selectMood(this, 'okay')">
+                    <span class="m-emoji">😐</span>
+                    <div data-key="okay">Okay</div>
+                </div>
+                <div class="mood-btn" onclick="selectMood(this, 'low')">
+                    <span class="m-emoji">😔</span>
+                    <div data-key="low">Low</div>
+                </div>
+                <div class="mood-btn" onclick="selectMood(this, 'terrible')">
+                    <span class="m-emoji">😢</span>
+                    <div data-key="terrible">Bad</div>
+                </div>
+            </div>
+            <textarea class="mood-note" id="moodNote" data-placeholder="moodNote" placeholder="How are you feeling? (optional)"></textarea>
+            <button class="log-mood-btn" onclick="logMood()" data-key="logMood">Log Mood</button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div class="section">
+            <div class="section-title"><span class="icon">📊</span> <span data-key="dashboard">Your Dashboard</span></div>
+            <div class="dashboard-cards">
+                <div class="dash-card">
+                    <div class="dash-num" id="totalSessions">0</div>
+                    <div class="dash-label" data-key="sessions">Sessions</div>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-num" id="totalMoods">0</div>
+                    <div class="dash-label" data-key="moodsLogged">Moods</div>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-num" id="currentStreak">0</div>
+                    <div class="dash-label" data-key="dayStreak">Day Streak</div>
+                </div>
+                <div class="dash-card">
+                    <div class="dash-num" id="breathMinutes">0</div>
+                    <div class="dash-label" data-key="minBreathed">Min Breathed</div>
+                </div>
+            </div>
+            <div class="dash-actions">
+                <button class="dash-action" onclick="shareReport()" data-key="shareDoctor">Share with Doctor</button>
+                <button class="dash-action" onclick="exportReport()" data-key="exportReport">Export Report</button>
+            </div>
+            <div class="mood-history" id="moodHistory"></div>
+        </div>
+
+        <!-- Install Section -->
+        <div class="install-section">
+            <button class="install-btn" onclick="installApp()">
+                📲 <span data-key="installApp">Install as App</span>
+            </button>
+        </div>
+
+        <div class="footer">
+            1Billion Health © 2025<br>
+            <small>Wellness for everyone, everywhere</small>
+        </div>
+    </div>
+
+    <script>
+    // ==================== AUDIO ENGINE ====================
+    let audioCtx = null;
+    let currentOsc = null;
+    let currentGain = null;
+    let noiseNode = null;
+    let noiseGain = null;
+    let breathingInterval = null;
+    let meditationInterval = null;
+    let isBreathing = false;
+    let selectedMood = null;
+    let currentLang = 'en';
+    let sessionCount = 0;
+    let breathMinCount = 0;
+
+    // Start the app - hide overlay and init audio
+    let appStarted = false;
+    function startApp() {
+        if (appStarted) return;
+        appStarted = true;
+        
+        const overlay = document.getElementById('unlockOverlay');
+        if (overlay) overlay.style.display = 'none';
+        
+        try {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+            playTone(523, 0.1, 0.3);
+        } catch(e) {}
+        
+        showToast('Welcome to 1Billion Health');
+    }
+
+    // Setup start button with both click and touch support
+    function setupStartButton() {
+        const btn = document.getElementById('startBtn');
+        const overlay = document.getElementById('unlockOverlay');
+
+        function handleStart(e) {
+            if (e && e.preventDefault) e.preventDefault();
+            if (e && e.stopPropagation) e.stopPropagation();
+            startApp();
+            return false;
+        }
+
+        if (btn) {
+            btn.addEventListener('click', handleStart);
+            btn.addEventListener('touchend', handleStart);
+            btn.addEventListener('touchstart', function(e) { e.preventDefault(); }, {passive:false});
+        }
+        if (overlay) {
+            overlay.addEventListener('click', handleStart);
+            overlay.addEventListener('touchend', handleStart);
+        }
+    }
+
+    // Auto-hide overlay after 3 seconds if not tapped (fallback)
+    setTimeout(() => {
+        if (!appStarted) startApp();
+    }, 3000);
+
+    // Play a tone
+    function playTone(freq, volume, duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = freq;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(volume, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // Play bell sound
+    function playBell() {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 528;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain.gain.linearRampToValueAtTime(0.3, audioCtx.currentTime + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 3);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + 3);
+
+        const osc2 = audioCtx.createOscillator();
+        const gain2 = audioCtx.createGain();
+        osc2.connect(gain2);
+        gain2.connect(audioCtx.destination);
+        osc2.frequency.value = 1056;
+        osc2.type = 'sine';
+        gain2.gain.setValueAtTime(0, audioCtx.currentTime);
+        gain2.gain.linearRampToValueAtTime(0.15, audioCtx.currentTime + 0.01);
+        gain2.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 2);
+        osc2.start(audioCtx.currentTime);
+        osc2.stop(audioCtx.currentTime + 2);
+    }
+
+    // Brown noise generator
+    function playBrownNoise(volume, duration) {
+        if (!audioCtx) return;
+        const bufferSize = audioCtx.sampleRate * duration;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        let lastOut = 0;
+        for (let i = 0; i < bufferSize; i++) {
+            const white = Math.random() * 2 - 1;
+            data[i] = (lastOut + (0.02 * white)) / 1.02;
+            lastOut = data[i];
+            data[i] *= 3.5;
+        }
+        noiseNode = audioCtx.createBufferSource();
+        noiseNode.buffer = buffer;
+        noiseGain = audioCtx.createGain();
+        noiseNode.connect(noiseGain);
+        noiseGain.connect(audioCtx.destination);
+        noiseGain.gain.setValueAtTime(volume, audioCtx.currentTime);
+        noiseGain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        noiseNode.start();
+        noiseNode.stop(audioCtx.currentTime + duration);
+    }
+
+    // 432Hz calming tone
+    function play432Tone(duration) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.frequency.value = 432;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime + duration - 2);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+        osc.start(audioCtx.currentTime);
+        osc.stop(audioCtx.currentTime + duration);
+    }
+
+    // Speak text using TTS
+    function speak(text) {
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel();
+            const utterance = new SpeechSynthesisUtterance(text);
+            const voices = window.speechSynthesis.getVoices();
+            const langMap = { en: 'en', hi: 'hi', kn: 'kn' };
+            const targetLang = langMap[currentLang] || 'en';
+            const matched = voices.find(v => v.lang.startsWith(targetLang));
+            if (matched) utterance.voice = matched;
+            utterance.rate = 0.85;
+            utterance.pitch = 1;
+            window.speechSynthesis.speak(utterance);
+        }
+    }
+
+    // ==================== TRANSLATIONS ====================
+    const translations = {
+        en: {
+            meditation: "Meditation", breathing: "Breathing Exercises", panicHelp: "Panic Help",
+            quickCalm: "Quick Calm", stressRelease: "Stress Release", deepSleep: "Deep Sleep",
+            anxietyRelief: "Anxiety Relief", deepFocus: "Deep Focus", morningEnergy: "Morning Energy",
+            panicButton: "I Need Help Now", see5: "See 5", touch4: "Touch 4", hear3: "Hear 3",
+            smell2: "Smell 2", taste1: "Taste 1", reset: "Reset",
+            moodTracker: "Mood Tracker", great: "Great", good: "Good", okay: "Okay", low: "Low", terrible: "Bad",
+            logMood: "Log Mood", moodNote: "How are you feeling? (optional)",
+            dashboard: "Your Dashboard", sessions: "Sessions", moodsLogged: "Moods", dayStreak: "Day Streak",
+            minBreathed: "Min Breathed", shareDoctor: "Share with Doctor", exportReport: "Export Report",
+            installApp: "Install as App",
+            inhale: "Breathe In", hold: "Hold", exhale: "Breathe Out",
+            ready: "Ready", calmText: "Calming 432Hz tone playing. You are safe.",
+            lookAround: "Look around. Name 5 things you can see.",
+            touchThings: "Touch 4 things around you. Feel their texture.",
+            listenSounds: "Listen carefully. Name 3 sounds you hear.",
+            smells: "Notice 2 different smells around you.",
+            taste: "Name 1 thing you can taste right now.",
+            logSuccess: "Mood logged successfully!",
+            copied: "Report copied to clipboard!",
+            noMoods: "No moods logged yet.",
+            panicReassurance: "You are safe. This will pass. Focus on your breathing."
+        },
+        hi: {
+            meditation: "ध्यान", breathing: "साँस लेने के अभ्यास", panicHelp: "घबराहट सहायता",
+            quickCalm: "त्वरित शांति", stressRelease: "तनाव मुक्ति", deepSleep: "गहरी नींद",
+            anxietyRelief: "चिंता राहत", deepFocus: "गहरा ध्यान", morningEnergy: "सुबह की ऊर्जा",
+            panicButton: "मुझे अभी मदद चाहिए", see5: "5 देखें", touch4: "4 छुएं", hear3: "3 सुनें",
+            smell2: "2 सूंघें", taste1: "1 चखें", reset: "रीसेट",
+            moodTracker: "मूड ट्रैकर", great: "बढ़िया", good: "अच्छा", okay: "ठीक", low: "उदास", terrible: "बुरा",
+            logMood: "मूड दर्ज करें", moodNote: "आप कैसा महसूस कर रहे हैं?",
+            dashboard: "आपका डैशबोर्ड", sessions: "सत्र", moodsLogged: "मूड्स", dayStreak: "दिन स्ट्रीक",
+            minBreathed: "मिनट साँस", shareDoctor: "डॉक्टर को साझा करें", exportReport: "रिपोर्ट निर्यात",
+            installApp: "ऐप के रूप में स्थापित करें",
+            inhale: "साँस लें", hold: "रोकें", exhale: "छोड़ें",
+            ready: "तैयार", calmText: "432Hz शांत धुन बज रही है। आप सुरक्षित हैं।",
+            panicReassurance: "आप सुरक्षित हैं। यह गुजर जाएगा। अपनी साँस पर ध्यान दें।"
+        },
+        kn: {
+            meditation: "ಧ್ಯಾನ", breathing: "ಉಸಿರಾಟದ ವ್ಯಾಯಾಮ", panicHelp: "ಆತಂಕ ಸಹಾಯ",
+            quickCalm: "ತ್ವರಿತ ಶಾಂತಿ", stressRelease: "ಒತ್ತಡ ಬಿಡುಗಡೆ", deepSleep: "ಆಳವಾದ ನಿದ್ರೆ",
+            anxietyRelief: "ಚಿಂತೆ ರಾಹತಿ", deepFocus: "ಆಳವಾದ ಏಕಾಗ್ರತೆ", morningEnergy: "ಬೆಳಗ್ಗೆಯ ಶಕ್ತಿ",
+            panicButton: "ನನಗೆ ಈಗ ಸಹಾಯ ಬೇಕು", see5: "5 ನೋಡಿ", touch4: "4 ಮುಟ್ಟಿ", hear3: "3 ಕೇಳಿ",
+            smell2: "2 ವಾಸನೆ", taste1: "1 ರುಚಿ", reset: "ಮರುಹೊಂದಿಸಿ",
+            moodTracker: "ಮೂಡ್ ಟ್ರ್ಯಾಕರ್", great: "ಉತ್ತಮ", good: "ಚೆನ್ನಾಗಿದೆ", okay: "ಸರಿ", low: "ದುಃಖ", terrible: "ಕೆಟ್ಟದು",
+            logMood: "ಮೂಡ್ ದಾಖಲಿಸಿ", moodNote: "ನೀವು ಹೇಗೆ ಭಾವಿಸುತ್ತಿರುವಿರಿ?",
+            dashboard: "ನಿಮ್ಮ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್", sessions: "ಸೆಶನ್‌ಗಳು", moodsLogged: "ಮೂಡ್‌ಗಳು", dayStreak: "ದಿನ ಸ್ಟ್ರೀಕ್",
+            minBreathed: "ನಿಮಿಷ ಉಸಿರಾಟ", shareDoctor: "ವೈದ್ಯರಿಗೆ ಹಂಚಿಕೊಳ್ಳಿ", exportReport: "ರಿಪೋರ್ಟ್ ರಫ್ತು",
+            installApp: "ಅಪ್‌ಲಿಕೇಶನ್ ಆಗಿ ಸ್ಥಾಪಿಸಿ",
+            inhale: "ಉಸಿರಾಡಿ", hold: "ಹಿಡಿಯಿರಿ", exhale: "ಉಸಿರು ಬಿಡಿ",
+            ready: "ಸಿದ್ಧ", calmText: "432Hz ಶಾಂತ ಧ್ವನಿ. ನೀವು ಸುರಕ್ಷಿತರು.",
+            panicReassurance: "ನೀವು ಸುರಕ್ಷಿತರು. ಇದು ಕಳೆದುಹೋಗುತ್ತದೆ. ನಿಮ್ಮ ಉಸಿರಾಟದ ಮೇಲೆ ಗಮನ ಹರಿಸಿ."
+        }
+    };
+
+    function t(key) {
+        return (translations[currentLang] && translations[currentLang][key]) || translations.en[key] || key;
+    }
+
+    function changeLanguage(lang) {
+        currentLang = lang;
+        document.querySelectorAll('[data-key]').forEach(el => {
+            const key = el.getAttribute('data-key');
+            if (translations[lang] && translations[lang][key]) {
+                el.textContent = translations[lang][key];
+            }
+        });
+        document.querySelectorAll('[data-placeholder]').forEach(el => {
+            const key = el.getAttribute('data-placeholder');
+            if (translations[lang] && translations[lang][key]) {
+                el.placeholder = translations[lang][key];
+            }
+        });
+        showToast('Language: ' + lang.toUpperCase());
+    }
+
+    // ==================== MEDITATION ====================
+    function playMeditation(type) {
+        if (!audioCtx) { document.getElementById('unlockOverlay').classList.remove('hidden'); return; }
+        sessionCount++;
+        updateDashboard();
+
+        const titles = {
+            quick: t('quickCalm'), stress: t('stressRelease'), sleep: t('deepSleep'),
+            anxiety: t('anxietyRelief'), focus: t('deepFocus'), morning: t('morningEnergy')
+        };
+
+        document.getElementById('medTitle').textContent = titles[type] || 'Meditation';
+        document.getElementById('medModal').classList.add('show');
+        document.getElementById('medStatus').textContent = 'Starting...';
+
+        playBell();
+        playBrownNoise(0.08, 120);
+
+        const messages = {
+            quick: ["Let's take a moment to calm down", "Breathe in slowly... and out", "Feel your body relaxing", "You are doing great", "Namaste"],
+            stress: ["Release all your tension", "Let go of the stress", "Feel the calm spreading through you", "Every breath makes you lighter", "You are at peace now"],
+            sleep: ["Prepare for deep rest", "Let your thoughts drift away", "Feel yourself getting heavier", "Sink into peaceful sleep", "Sweet dreams"],
+            anxiety: ["You are safe right now", "Anxiety will pass like a wave", "Ground yourself in this moment", "You have overcome this before", "Peace is within you"],
+            focus: ["Clear your mind", "Focus on one thing at a time", "You are fully present", "Your mind is sharp and clear", "Maintain this clarity"],
+            morning: ["Welcome a new day", "Feel energy flowing through you", "You are ready for today", "Embrace the possibilities", "Have a wonderful day"]
+        };
+
+        const msgs = messages[type] || messages.quick;
+        let idx = 0;
+
+        setTimeout(() => {
+            if (document.getElementById('medModal').classList.contains('show')) {
+                speak(msgs[0]);
+            }
+        }, 2000);
+
+        meditationInterval = setInterval(() => {
+            idx = (idx + 1) % msgs.length;
+            document.getElementById('medStatus').textContent = msgs[idx];
+            speak(msgs[idx]);
+            playBell();
+        }, 8000);
+
+        document.getElementById('medStatus').textContent = msgs[0];
+    }
+
+    function stopMeditation() {
+        clearInterval(meditationInterval);
+        if (noiseNode) { try { noiseNode.stop(); } catch(e){} }
+        window.speechSynthesis.cancel();
+        document.getElementById('medModal').classList.remove('show');
+    }
+
+    // ==================== BREATHING EXERCISES ====================
+    function startBreathing(type) {
+        if (!audioCtx) { document.getElementById('unlockOverlay').classList.remove('hidden'); return; }
+        stopBreathing();
+        isBreathing = true;
+        sessionCount++;
+        updateDashboard();
+
+        let inhaleT, holdT, exhaleT, hold2T;
+        switch(type) {
+            case '4-7-8': inhaleT=4; holdT=7; exhaleT=8; hold2T=0; break;
+            case 'box': inhaleT=4; holdT=4; exhaleT=4; hold2T=4; break;
+            case 'calm': inhaleT=4; holdT=0; exhaleT=4; hold2T=0; break;
+            case 'deep': inhaleT=5; holdT=0; exhaleT=5; hold2T=0; break;
+            default: inhaleT=4; holdT=4; exhaleT=4; hold2T=4;
+        }
+
+        document.getElementById('breathCircle').classList.add('active');
+        document.querySelectorAll('.breath-btn').forEach(b => b.classList.remove('active'));
+        
+        const btnMap = {'4-7-8': 'btn478', 'box': 'btnBox', 'calm': 'btnCalm', 'deep': 'btnDeep'};
+        const btnId = btnMap[type] || 'btnBox';
+        document.getElementById(btnId).classList.add('active');
+
+        let phase = 0;
+        let timer = inhaleT;
+        const phases = [
+            { label: t('inhale'), time: inhaleT, scale: 1.3 },
+            { label: t('hold'), time: holdT, scale: 1.3 },
+            { label: t('exhale'), time: exhaleT, scale: 1.0 },
+            { label: t('hold'), time: hold2T, scale: 1.0 }
+        ].filter(p => p.time > 0);
+
+        function updateBreath() {
+            if (!isBreathing) return;
+            const p = phases[phase];
+            document.getElementById('breathLabel').textContent = p.label;
+            document.getElementById('breathTimer').textContent = timer;
+            document.getElementById('breathCircle').style.transform = `scale(${p.scale})`;
+            document.getElementById('breathInstruct').textContent = p.label + '...';
+
+            if (timer === p.time) {
+                if (p.label === t('inhale')) playTone(400, 0.1, 0.4);
+                else if (p.label === t('exhale')) playTone(300, 0.08, 0.4);
+            }
+
+            timer--;
+            if (timer < 0) {
+                phase = (phase + 1) % phases.length;
+                timer = phases[phase].time;
+            }
+        }
+
+        updateBreath();
+        breathingInterval = setInterval(updateBreath, 1000);
+    }
+
+    function stopBreathing() {
+        isBreathing = false;
+        clearInterval(breathingInterval);
+        document.getElementById('breathCircle').classList.remove('active');
+        document.getElementById('breathCircle').style.transform = 'scale(1)';
+        document.getElementById('breathLabel').textContent = t('ready');
+        document.getElementById('breathTimer').textContent = '--';
+        document.getElementById('breathInstruct').textContent = 'Select a breathing technique';
+        document.querySelectorAll('.breath-btn').forEach(b => b.classList.remove('active'));
+        breathMinCount++;
+        updateDashboard();
+    }
+
+    // ==================== PANIC HELP ====================
+    let groundingStep = 0;
+
+    function triggerPanicHelp() {
+        if (!audioCtx) { document.getElementById('unlockOverlay').classList.remove('hidden'); return; }
+        sessionCount++;
+        updateDashboard();
+
+        const panicActive = document.getElementById('panicActive');
+        panicActive.classList.add('show');
+
+        document.getElementById('panicText').innerHTML = 
+            '<strong>' + t('panicReassurance') + '</strong><br><br>' + t('calmText');
+
+        play432Tone(30);
+        speak(t('panicReassurance'));
+
+        groundingStep = 0;
+        document.querySelectorAll('.ground-item').forEach(g => g.classList.remove('done'));
+    }
+
+    function doGrounding(step) {
+        groundingStep = Math.max(groundingStep, step);
+        document.getElementById('g' + step).classList.add('done');
+        playTone(440 + step * 50, 0.15, 0.5);
+
+        const messages = {
+            1: t('lookAround'), 2: t('touchThings'), 3: t('listenSounds'),
+            4: t('smells'), 5: t('taste')
+        };
+        if (messages[step]) speak(messages[step]);
+
+        if (step === 5) {
+            setTimeout(() => {
+                speak(t('panicReassurance'));
+                showToast('Grounding complete. You are doing great!');
+            }, 2000);
+        }
+    }
+
+    function resetGrounding() {
+        groundingStep = 0;
+        document.querySelectorAll('.ground-item').forEach(g => g.classList.remove('done'));
+        playBell();
+    }
+
+    // ==================== MOOD TRACKER ====================
+    function selectMood(el, mood) {
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        el.classList.add('selected');
+        selectedMood = mood;
+    }
+
+    let moodHistory = [];
+
+    function logMood() {
+        if (!selectedMood) {
+            showToast('Please select a mood first');
+            return;
+        }
+
+        const moodEmojis = { great: '😄', good: '🙂', okay: '😐', low: '😔', terrible: '😢' };
+        const moodLabels = { great: t('great'), good: t('good'), okay: t('okay'), low: t('low'), terrible: t('terrible') };
+
+        const entry = {
+            mood: selectedMood,
+            emoji: moodEmojis[selectedMood],
+            label: moodLabels[selectedMood],
+            note: document.getElementById('moodNote').value,
+            date: new Date().toLocaleString()
+        };
+
+        moodHistory.unshift(entry);
+        if (moodHistory.length > 20) moodHistory.pop();
+
+        document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('selected'));
+        document.getElementById('moodNote').value = '';
+        selectedMood = null;
+
+        updateDashboard();
+        renderMoodHistory();
+        showToast(t('logSuccess'));
+        playTone(523, 0.15, 0.5);
+    }
+
+    function renderMoodHistory() {
+        const container = document.getElementById('moodHistory');
+        if (moodHistory.length === 0) {
+            container.innerHTML = '<div style="text-align:center;color:#666;padding:20px">' + t('noMoods') + '</div>';
+            return;
+        }
+
+        container.innerHTML = '<div style="font-size:14px;font-weight:600;margin-bottom:12px">Recent Moods</div>' +
+            moodHistory.slice(0, 5).map(e => 
+                '<div class="mood-entry">' +
+                    '<span class="h-emoji">' + e.emoji + '</span>' +
+                    '<div class="h-text">' +
+                        '<div>' + e.label + '</div>' +
+                        (e.note ? '<div class="h-note">' + e.note + '</div>' : '') +
+                    '</div>' +
+                    '<span class="h-date">' + e.date.split(',')[0] + '</span>' +
+                '</div>'
+            ).join('');
+    }
+    // ==================== DASHBOARD ====================
+    function updateDashboard() {
+        document.getElementById('totalSessions').textContent = sessionCount;
+        document.getElementById('totalMoods').textContent = moodHistory.length;
+        document.getElementById('currentStreak').textContent = moodHistory.length > 0 ? '1' : '0';
+        document.getElementById('breathMinutes').textContent = breathMinCount;
+    }
+
+    function shareReport() {
+        const report = generateReport();
+        navigator.clipboard.writeText(report).then(() => {
+            showToast(t('copied'));
+        }).catch(() => {
+            showToast('Report ready! (Copy manually)');
+        });
+    }
+
+    function exportReport() {
+        const report = generateReport();
+        const blob = new Blob([report], { type: 'text/plain' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = '1Billion-Health-Report.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+        showToast('Report downloaded!');
+    }
+
+    function generateReport() {
+        const now = new Date().toLocaleString();
+        let r = '1BILLION HEALTH - WELLNESS REPORT\n';
+        r += 'Generated: ' + now + '\n';
+        r += '================================\n\n';
+        r += 'Total Sessions: ' + sessionCount + '\n';
+        r += 'Moods Logged: ' + moodHistory.length + '\n';
+        r += 'Breathing Minutes: ' + breathMinCount + '\n\n';
+
+        if (moodHistory.length > 0) {
+            r += 'MOOD HISTORY:\n';
+            r += '-------------\n';
+            moodHistory.forEach(e => {
+                r += e.date + ' - ' + e.label + ' ' + e.emoji;
+                if (e.note) r += ' (' + e.note + ')';
+                r += '\n';
+            });
+        }
+        return r;
+    }
+
+    // ==================== INSTALL ====================
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        deferredPrompt = e;
+    });
+
+    function installApp() {
+        if (deferredPrompt) {
+            deferredPrompt.prompt();
+            deferredPrompt.userChoice.then((choice) => {
+                if (choice.outcome === 'accepted') {
+                    showToast('App installed!');
+                }
+                deferredPrompt = null;
+            });
+        } else {
+            showToast('Use browser menu > Add to Home Screen');
+        }
+    }
+
+    // ==================== UTILITIES ====================
+    function showToast(msg) {
+        const toast = document.getElementById('toast');
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 3000);
+    }
+
+    // Generate stars
+    function createStars() {
+        const container = document.getElementById('stars');
+        for (let i = 0; i < 50; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.top = Math.random() * 100 + '%';
+            star.style.animationDelay = Math.random() * 3 + 's';
+            star.style.opacity = Math.random();
+            container.appendChild(star);
+        }
+    }
+
+    // Load voices when available
+    if ('speechSynthesis' in window) {
+        window.speechSynthesis.getVoices();
+        window.speechSynthesis.onvoiceschanged = () => {
+            window.speechSynthesis.getVoices();
+        };
+    }
+
+    // ==================== INITIALIZATION ====================
+    
+    // Load saved data from localStorage FIRST
+    try {
+        const saved = localStorage.getItem('1bhealth_data');
+        if (saved) {
+            const data = JSON.parse(saved);
+            sessionCount = data.sessionCount || 0;
+            moodHistory = data.moodHistory || [];
+            breathMinCount = data.breathMinCount || 0;
+            if (data.currentLang && translations[data.currentLang]) {
+                currentLang = data.currentLang;
+                const langSelect = document.getElementById('langSelect');
+                if (langSelect) langSelect.value = currentLang;
+            }
+        }
+    } catch(e) { console.error('Storage load failed:', e); }
+
+    // Escape key to close meditation modal
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') stopMeditation();
+    });
+
+    // Initialize UI AFTER loading data
+    setupStartButton();
+    createStars();
+    try { changeLanguage(currentLang); } catch(e) {}
+    updateDashboard();
+    renderMoodHistory();
+
+    // Save data periodically (include currentLang)
+    setInterval(() => {
+        try {
+            localStorage.setItem('1bhealth_data', JSON.stringify({
+                sessionCount, moodHistory, breathMinCount, currentLang
+            }));
+        } catch(e) {}
+    }, 10000);
+    </script>
+</body>
+</html>
